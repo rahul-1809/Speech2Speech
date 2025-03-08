@@ -1,6 +1,7 @@
-streamlit>=1.32.0
-SpeechRecognition==3.10.0
-google-generativeai>=0.3.0
-gtts==2.4.0
-PyAudio==0.2.14
-portaudio19-dev 
+streamlit
+SpeechRecognition
+google-generativeai
+gtts
+pyaudio
+pydub
+ffmpeg
