@@ -2,9 +2,6 @@ import streamlit as st
 import speech_recognition as sr
 import google.generativeai as genai
 import gtts
-import numpy as np
-import pyaudio
-import wave
 from io import BytesIO
 import uuid
 
@@ -58,41 +55,11 @@ def text_to_speech(text, lang):
         return None
 
 def record_audio():
-    """Records audio using PyAudio and saves as a WAV file"""
-    chunk = 1024  # Record in chunks of 1024 samples
-    sample_format = pyaudio.paInt16  # 16-bit format
-    channels = 1
-    sample_rate = 44100
-    duration = 5  # Duration in seconds
-    file_path = "recorded_audio.wav"
-
-    p = pyaudio.PyAudio()
-
-    stream = p.open(format=sample_format,
-                    channels=channels,
-                    rate=sample_rate,
-                    input=True,
-                    frames_per_buffer=chunk)
-
-    st.info("Recording... Speak now!")
-
-    frames = []
-    for _ in range(0, int(sample_rate / chunk * duration)):
-        data = stream.read(chunk)
-        frames.append(data)
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    # Save as WAV
-    with wave.open(file_path, 'wb') as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(p.get_sample_size(sample_format))
-        wf.setframerate(sample_rate)
-        wf.writeframes(b''.join(frames))
-
-    return file_path
+    """Records audio until manually stopped"""
+    with sr.Microphone() as source:
+        st.info("Recording... Speak now!")
+        audio_data = recognizer.listen(source)
+    return audio_data
 
 def main():
     st.title("🎙️ Live Speech Translator")
@@ -122,16 +89,13 @@ def main():
             st.session_state.audio_file = None
 
     if st.session_state.recording:
-        audio_path = record_audio()
-        st.session_state.audio_data = audio_path
+        st.session_state.audio_data = record_audio()
         st.session_state.recording = False  # Automatically stop recording
 
     if st.session_state.audio_data:
         if st.button("⏹️ Stop Recording"):
             try:
-                with sr.AudioFile(st.session_state.audio_data) as source:
-                    audio = recognizer.record(source)
-                text = recognizer.recognize_google(audio, language=source_lang)
+                text = recognizer.recognize_google(st.session_state.audio_data, language=source_lang)
                 st.session_state.original_text = text
 
                 # Translate text
