@@ -3,4 +3,4 @@ SpeechRecognition
 google-generativeai
 pygame
 gtts
-pydub
+pyaudio
