@@ -2,6 +2,5 @@ streamlit
 speechrecognition
 google-generativeai
 gtts
-sounddevice
 numpy
-scipy
+pyaudio
