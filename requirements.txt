@@ -1,7 +1,7 @@
-streamlit
-SpeechRecognition
+streamlit 
+sounddevice 
+numpy 
+scipy 
+speechrecognition 
 google-generativeai
 gtts
-pyaudio
-pydub
-ffmpeg
