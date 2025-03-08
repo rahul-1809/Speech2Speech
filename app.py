@@ -2,6 +2,9 @@ import streamlit as st
 import speech_recognition as sr
 import google.generativeai as genai
 import gtts
+import sounddevice as sd
+import numpy as np
+import scipy.io.wavfile as wav
 from io import BytesIO
 import uuid
 
@@ -55,11 +58,18 @@ def text_to_speech(text, lang):
         return None
 
 def record_audio():
-    """Records audio until manually stopped"""
-    with sr.Microphone() as source:
-        st.info("Recording... Speak now!")
-        audio_data = recognizer.listen(source)
-    return audio_data
+    """Records audio using sounddevice and saves as a WAV file"""
+    duration = 5  # Recording duration in seconds
+    sample_rate = 44100  # Sample rate
+    
+    st.info("Recording... Speak now!")
+    audio_data = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype=np.int16)
+    sd.wait()  # Wait until recording is finished
+
+    # Save recorded audio as a temporary WAV file
+    file_path = "recorded_audio.wav"
+    wav.write(file_path, sample_rate, audio_data)
+    return file_path
 
 def main():
     st.title("🎙️ Live Speech Translator")
@@ -89,13 +99,16 @@ def main():
             st.session_state.audio_file = None
 
     if st.session_state.recording:
-        st.session_state.audio_data = record_audio()
+        audio_path = record_audio()
+        st.session_state.audio_data = audio_path
         st.session_state.recording = False  # Automatically stop recording
 
     if st.session_state.audio_data:
         if st.button("⏹️ Stop Recording"):
             try:
-                text = recognizer.recognize_google(st.session_state.audio_data, language=source_lang)
+                with sr.AudioFile(st.session_state.audio_data) as source:
+                    audio = recognizer.record(source)
+                text = recognizer.recognize_google(audio, language=source_lang)
                 st.session_state.original_text = text
 
                 # Translate text
