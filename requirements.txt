@@ -1,6 +1,8 @@
 streamlit
-SpeechRecognition
+speechrecognition
 google-generativeai
-pygame
 gtts
-pyaudio
+numpy
+librosa
+soundfile
+jiwer
